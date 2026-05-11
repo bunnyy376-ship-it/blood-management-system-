@@ -1,0 +1,2 @@
+cd c:\Users\bunny\ndg\life-link-mobile
+npx expo start --tunnel

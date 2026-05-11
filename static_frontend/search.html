@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Management System - Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .navbar-brand { font-weight: 800; font-size: 1.5rem; letter-spacing: 0.5px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background: linear-gradient(135deg, #dc3545, #a71d2a);">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/" style="font-size: 1.5rem; letter-spacing: 0.5px;">🩸 Blood Management System</a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item"><a class="nav-link text-white fw-bold active" href="/search">Find Donor</a></li>
+                <li class="nav-item"><a class="nav-link text-white fw-medium" href="/dashboard">My Dashboard</a></li>
+                <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                    <a class="btn btn-outline-light btn-sm fw-bold" style="border-radius: 8px;" href="/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5 mb-5">
+    <div class="row g-4">
+        <!-- Filters Sidebar -->
+        <div class="col-lg-4">
+            <div class="card p-4 shadow-sm border-0 sticky-lg-top" style="top: 2rem; border-radius: 16px;">
+                <h4 class="mb-3 fw-bold text-dark">Find Donors</h4>
+                <p class="text-muted small mb-4">Search for registered and available donors in your area.</p>
+                <form id="searchForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Pincode</label>
+                        <div class="input-group shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-geo-alt"></i></span>
+                            <input type="text" id="pincodeInput" class="form-control bg-light border-0 py-2" placeholder="Enter Pincode" required>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Blood Group</label>
+                        <div class="input-group shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-droplet"></i></span>
+                            <select id="bloodGroupSelect" class="form-select bg-light border-0 py-2" required>
+                                <option value="">Select Blood Group</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-danger w-100 fw-bold py-2 shadow-sm" style="border-radius: 10px; letter-spacing: 0.5px;">Search Now</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded-pill shadow-sm border border-light">
+                <h5 class="fw-bold mb-0 ms-3 text-dark">Search Results</h5>
+                <span id="resultCount" class="badge rounded-pill px-3 py-2 me-1 shadow-sm" style="background: linear-gradient(135deg, #dc3545, #a71d2a); font-size: 0.9rem;">Total Found: 0</span>
+            </div>
+
+            <!-- This container is populated by JavaScript -->
+            <div class="row g-4" id="donorResults">
+                <div class="col-12 text-center py-5 bg-white rounded-4 shadow-sm border-0">
+                    <div class="text-danger mb-3" style="font-size: 3rem; opacity: 0.5;"><i class="bi bi-search"></i></div>
+                    <h5 class="fw-bold text-dark">Ready to Search</h5>
+                    <p class="text-muted">Enter a pincode and blood group to see real, registered donors in your area.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+async function searchDonors(event) {
+    event.preventDefault();
+    
+    const pincode = document.getElementById('pincodeInput').value;
+    const bloodGroup = document.getElementById('bloodGroupSelect').value;
+    const resultsContainer = document.getElementById('donorResults');
+    const countBadge = document.getElementById('resultCount');
+
+    // Show loading state
+    resultsContainer.innerHTML = '<div class="col-12 text-center"><div class="spinner-border text-danger" role="status"></div></div>';
+
+    try {
+        // IMPORTANT: Replace '/api/donors' with your actual backend URL (e.g., http://localhost:5000/api/donors)
+        const response = await fetch(`/api/donors?pincode=${pincode}&bloodGroup=${bloodGroup}`);
+        const donors = await response.json();
+
+        resultsContainer.innerHTML = ''; 
+        countBadge.innerText = `Total Found: ${donors.length}`;
+
+        if (donors.length === 0) {
+            resultsContainer.innerHTML = '<div class="col-12 text-center py-5"><p class="text-muted">No donors found for this criteria.</p></div>';
+            return;
+        }
+
+        donors.forEach(donor => {
+            resultsContainer.innerHTML += `
+                <div class="col-md-6">
+                    <div class="card p-3 shadow-sm border-0 h-100">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="mb-0 fw-bold">${donor.fullName}</h5>
+                            <span class="badge bg-danger fs-6">${donor.bloodGroup}</span>
+                        </div>
+                        <div class="text-muted small mb-3">
+                            <div>📍 Pincode: ${donor.pincode}</div>
+                            <div class="mt-1"><small>📝 ${donor.note || 'Ready to help in emergencies.'}</small></div>
+                        </div>
+                        <div class="mt-auto">
+                            <a href="mailto:${donor.email}?subject=Urgent Blood Requirement" class="btn btn-primary btn-sm w-100 fw-bold">
+                                <i class="bi bi-envelope"></i> Contact via Email
+                            </a>
+                        </div>
+                    </div>
+                </div>`;
+        });
+    } catch (error) {
+        console.error('Error fetching donors:', error);
+        resultsContainer.innerHTML = '<div class="col-12 text-center py-5 text-danger"><p>Error connecting to the database. Make sure your server is running.</p></div>';
+    }
+}
+
+document.getElementById('searchForm').addEventListener('submit', searchDonors);
+</script>
+</body>
+</html>
